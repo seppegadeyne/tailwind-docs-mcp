@@ -28,7 +28,7 @@ TAILWIND_DOCS_DIR=/path/to/tailwindcss.com/src/docs npm start
 
 ```yaml
 mcp_servers:
-  tailwindcss:
+  tailwind-docs:
     command: "node"
     args: ["/absolute/path/to/tailwind-docs-mcp/dist/cli.js"]
     timeout: 180
