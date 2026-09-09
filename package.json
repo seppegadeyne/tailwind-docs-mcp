@@ -1,11 +1,11 @@
 {
-  "name": "@voltti/tailwindcss-mcp",
+  "name": "@voltti/tailwind-docs-mcp",
   "version": "0.1.0",
   "private": true,
   "description": "MCP server for the latest Tailwind CSS documentation.",
   "type": "module",
   "bin": {
-    "tailwindcss-mcp": "dist/cli.js"
+    "tailwind-docs-mcp": "dist/cli.js"
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
