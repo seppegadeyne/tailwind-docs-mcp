@@ -11,7 +11,7 @@ const packageJson = JSON.parse(await readFile(path.join(import.meta.dirname, '..
 export function createServer() {
   const server = new McpServer(
     {
-      name: 'tailwindcss',
+      name: 'tailwind-docs',
       version: packageJson.version,
     },
     {
