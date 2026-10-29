@@ -26,7 +26,7 @@ type GitHubTreeResponse = {
   tree: Array<{ path: string; type: string }>;
 };
 
-let remoteCache: TailwindDoc[] | undefined;
+let remoteCache: Promise<TailwindDoc[]> | undefined;
 
 export async function loadDocs(): Promise<TailwindDoc[]> {
   const docsDir = process.env.TAILWIND_DOCS_DIR;
@@ -34,9 +34,11 @@ export async function loadDocs(): Promise<TailwindDoc[]> {
     return buildIndexFromDirectory(docsDir);
   }
 
-  if (!remoteCache) {
-    remoteCache = await buildIndexFromGitHub();
-  }
+  // Cache the promise so concurrent first calls share one fetch; evict on failure so the next call retries.
+  remoteCache ??= buildIndexFromGitHub().catch((error) => {
+    remoteCache = undefined;
+    throw error;
+  });
   return remoteCache;
 }
 
@@ -70,7 +72,7 @@ export async function buildIndexFromGitHub(fetchImpl: typeof fetch = fetch): Pro
 
   const tree = (await treeResponse.json()) as GitHubTreeResponse;
   const docPaths = tree.tree
-    .filter((entry) => entry.type === 'blob' && entry.path.startsWith('src/docs/') && entry.path.endsWith('.mdx'))
+    .filter((entry) => entry.type === 'blob' && /^src\/docs\/[^/]+\.mdx$/.test(entry.path))
     .map((entry) => entry.path)
     .sort();
 

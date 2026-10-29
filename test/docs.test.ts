@@ -93,3 +93,30 @@ test('formatDoc renders a compact markdown document for AI context', async () =>
   assert.match(markdown, /`bg-red-500` → `background-color: var\(--color-red-500\);`/);
   assert.match(markdown, /## Content/);
 });
+
+test('loadDocs shares one remote fetch across concurrent calls and ignores nested files', async () => {
+  const { loadDocs } = await import('../src/docs.js');
+  const originalFetch = globalThis.fetch;
+  const urls: string[] = [];
+  globalThis.fetch = (async (url: string) => {
+    urls.push(String(url));
+    if (String(url).includes('api.github.com')) {
+      return Response.json({
+        tree: [
+          { path: 'src/docs/margin.mdx', type: 'blob' },
+          { path: 'src/docs/nested/other.mdx', type: 'blob' },
+        ],
+      });
+    }
+    return new Response('export const title = "margin";\n');
+  }) as typeof fetch;
+
+  try {
+    const [a, b] = await Promise.all([loadDocs(), loadDocs()]);
+    assert.equal(a, b);
+    assert.deepEqual(a.map((doc) => doc.slug), ['margin']);
+    assert.equal(urls.length, 2);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
